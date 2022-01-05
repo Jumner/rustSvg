@@ -1,10 +1,15 @@
+use image::pnm::PnmDecoder;
+use image::ImageFormat;
 use ndarray_vision::core::*;
 use ndarray_vision::format::netpbm::*;
 use ndarray_vision::format::*;
 use ndarray_vision::processing::*;
 use std::env;
 use std::env::current_exe;
+use std::fs::File;
 use std::path::PathBuf;
+
+extern crate image;
 
 fn main() {
 	println!("Program started!");
@@ -21,23 +26,21 @@ fn main() {
 		let mut cameraman = PathBuf::from(&root);
 		cameraman.push(directory);
 
-		println!("{:?}", cameraman);
+		let img = image::open(cameraman).expect("Error opening file");
+		let mut output = File::create(&format!("tmp.jpg")).expect("tmp File creation failed");
+		img
+			.write_to(&mut output, ImageFormat::Pnm)
+			.expect("tmp write failed");
 
 		let decoder = PpmDecoder::default();
-		let image: Image<u8, _> = decoder.decode_file(cameraman).expect("Could not open file");
+		// let de = PnmDecoder::new(read)
+		let image: Image<u8, _> = decoder.decode_file("tmp.ppm").expect("Could not open file");
 		let image: Image<f64, _> = image.into_type();
-		let image: Image<_, Gray> = image.into();
+		let image: Image<f64, Gray> = image.into();
 
 		let canny = canny_edge(&image);
 
-		let image = image.apply_sobel().expect("Sobel error");
-		let image: Image<_, RGB> = image.into();
-		let mut cameraman = PathBuf::from(&root);
-		cameraman.push("sobel.ppm");
 		let ppm = PpmEncoder::new_plaintext_encoder();
-		ppm
-			.encode_file(&image, cameraman)
-			.expect("Error encoding file");
 
 		let mut cameraman = PathBuf::from(&root);
 		cameraman.push("canny.ppm");
