@@ -1,0 +1,6 @@
+[package]
+edition = "2021"
+name = "rustsvg"
+version = "0.1.0"
+[dependencies]
+cv = "0.6.0"
