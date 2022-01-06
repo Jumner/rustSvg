@@ -21,7 +21,16 @@ fn main() {
 
 		let image = image::open(path).expect("Image open failed").to_luma8();
 		let detection = edge_detection::canny(image, 1.2, 0.2, 0.01);
+		// detection.interpolate(x, y)
 		save(detection.as_image(), "canny.png");
+		for y in 0..detection.height() {
+			for x in 0..detection.width() {
+				let edge = detection.interpolate(x as f32, y as f32);
+				if edge.magnitude() > 0.0 {
+					println!("{:?}", edge.dir_norm());
+				}
+			}
+		}
 	}
 }
 
